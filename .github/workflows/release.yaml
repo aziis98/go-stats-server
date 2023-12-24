@@ -1,0 +1,30 @@
+name: Build and Release
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v2
+
+            - name: Set up Go
+              uses: actions/setup-go@v2
+              with:
+                  go-version: 1.21
+
+            - name: Build
+              run: |
+                  CGO_ENABLED=0 GOARCH=arm64 go build -a -ldflags '-s -w' -o ./out/stats-server
+
+            - name: Create Release
+              id: create_release
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: ./out/stats-server
+                  token: ${{ secrets.GITHUB_TOKEN }}
