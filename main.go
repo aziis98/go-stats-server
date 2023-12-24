@@ -1,8 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"io"
+	"log"
 	"net"
 	"os"
 	"os/exec"
@@ -17,13 +18,14 @@ var commands = map[string]string{
 	"uptime":  `cut -f1 -d. /proc/uptime`,
 }
 
-// ExecuteCommand runs a system command and returns its output
-func ExecuteCommand(command string) string {
+// executeCommand runs a system command and returns its output
+func executeCommand(command string) string {
 	cmd := exec.Command("bash", "-c", command)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Sprintf("Error: %s", err)
+		return err.Error()
 	}
+
 	return string(output)
 }
 
@@ -31,20 +33,22 @@ func ExecuteCommand(command string) string {
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
 
-	command, err := io.ReadAll(conn)
-	if err != nil {
-		fmt.Println(err)
+	scanner := bufio.NewScanner(conn)
+	if !scanner.Scan() {
+		log.Printf("Error reading from %s, %s", conn.RemoteAddr(), scanner.Err())
 		return
 	}
+
+	command := scanner.Text()
 
 	cmd, valid := commands[strings.TrimSpace(string(command))]
 	if !valid {
-		fmt.Fprintln(conn, "Invalid command")
+		fmt.Fprintln(conn, "invalid command")
 		return
 	}
 
-	stdout := ExecuteCommand(cmd)
-	fmt.Fprintln(conn, stdout)
+	output := executeCommand(cmd)
+	fmt.Fprintln(conn, output)
 }
 
 func main() {
@@ -60,6 +64,7 @@ func main() {
 	}
 	defer ln.Close()
 
+	log.Printf("Listening on %s...", host)
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
@@ -67,6 +72,7 @@ func main() {
 			continue
 		}
 
+		log.Printf("Connection from %s", conn.RemoteAddr())
 		go handleConnection(conn)
 	}
 }
