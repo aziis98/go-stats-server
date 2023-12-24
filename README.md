@@ -47,18 +47,24 @@ information such as CPU usage, memory status, network statistics, storage detail
 The included GitHub Actions workflow automates the build and release process. On each push to the main branch, the workflow builds the Go program, creates a
 GitHub release, and uploads the compiled binary as an artifact.
 
-## Downloading the Artifact
+## Self-Installing Binary
 
-TODO
-
-<!--
-To download the compiled binary on multiple machines using GNU Parallel, use the following `wget` command:
+Assuming you have a cluster of machines, you can use the following commands to download and install the latest version of the binary on all nodes. You must have root access to all nodes.
 
 ```bash
-cat machines.txt | parallel --slf - 'wget -qO- https://github.com/aziis98/go-stats-server/releases/latest/download/stats-server | tar -xz -C /path/to/destination/'
+$ parallel --nonall --slf nodes.txt 'mkdir -p cluster'
+$ parallel --nonall --slf nodes.txt 'wget -qO- https://github.com/aziis98/go-stats-server/releases/latest/download/stats-server > ./cluster/stats-server'
+$ parallel --nonall --slf nodes.txt 'chmod -v +x ./cluster/stats-server'
+
+# to setup on all nodes
+$ parallel --nonall --slf nodes.txt './cluster/stats-server setup'
+
+# to setup on a single node
+$ ssh root@<node>
+$ cd cluster
+$ ./stats-server setup
+
+# trying out the new binary using netcat
+$ time ( echo '<command>' | nc <node> 12345 )
 ```
 
-Replace "your-username" and "your-repo" with your GitHub username and repository name. Adjust "/path/to/destination/" to the desired destination on the target machines.
-
-Feel free to explore and customize the server to suit your needs. If you encounter any issues or have suggestions for improvements, please open an issue on this repository. Contributions are welcome!
--->
