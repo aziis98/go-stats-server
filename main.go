@@ -78,22 +78,25 @@ func handleConnection(conn net.Conn) {
 
 func runCommand(args ...string) error {
 	cmd := exec.Command(args[0], args[1:]...)
-	if err := cmd.Run(); err != nil {
-		return err
+
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("%w: %s", err, output)
 	}
 
 	return nil
 }
 
 func setupSystemdService() error {
-	// copy itself to /usr/bin
+	if _, err := os.Stat("/usr/local/bin/stats-server"); err == nil {
+		log.Println("binary already exists in /usr/local/bin, updating...")
+	}
+
 	log.Println("copying itself to /usr/local/bin/stats-server")
-	if err := runCommand("cp", os.Args[0], "/usr/local/bin/stats-server"); err != nil {
+	if err := runCommand("cp", "-f", os.Args[0], "/usr/local/bin/stats-server"); err != nil {
 		return err
 	}
 
-	// write systemd service unit
-	log.Println("generating /etc/systemd/system/stats-server.service")
+	log.Println("writing unit to /etc/systemd/system/stats-server.service")
 	if err := os.WriteFile(
 		"/etc/systemd/system/stats-server.service",
 		[]byte(systemdServiceUnit),
@@ -102,15 +105,18 @@ func setupSystemdService() error {
 		return err
 	}
 
-	// reload systemd
 	log.Println("running systemctl daemon-reload")
 	if err := runCommand("systemctl", "daemon-reload"); err != nil {
 		return err
 	}
 
-	// enable and start the service
-	log.Println("running systemctl enable --now stats-server.service")
-	if err := runCommand("systemctl", "enable", "--now", "stats-server.service"); err != nil {
+	log.Println("running systemctl enable stats-server.service")
+	if err := runCommand("systemctl", "enable", "stats-server.service"); err != nil {
+		return err
+	}
+
+	log.Println("running systemctl (re)start stats-server.service")
+	if err := runCommand("systemctl", "restart", "stats-server.service"); err != nil {
 		return err
 	}
 
