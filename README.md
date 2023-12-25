@@ -74,3 +74,13 @@ $ time ( echo '<command>' | nc <node> 12345 )
 # stop and disable the systemd service on all nodes
 $ parallel --nonall --slf nodes.txt 'systemctl disable --now stats-server.service'
 ```
+
+## Credits
+
+- The shell code for the commands was originally made by [@BachoSeven](https://github.com/bachoseven)
+
+    <https://git.phc.dm.unipi.it/phc/cluster-dashboard/src/branch/main/backend/scripts>
+
+- Most of the code was initially made with the help of ChatGPT in this conversation
+
+    <https://chat.openai.com/share/40247aa0-76e9-4d9a-b0fa-356a5f51f208>

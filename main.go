@@ -25,6 +25,7 @@ ExecStart=/usr/local/bin/stats-server serve
 WantedBy=default.target
 `)
 
+// commands is a map of commands that can be run on the server, originally made by https://github.com/bachoseven
 var commands = map[string]string{
 	"cpu":     `top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | sed "s/^/100 - /" | bc`,
 	"memory":  `free -m | awk '/Mem/{print $3 " " $2}'`,
