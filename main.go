@@ -148,11 +148,29 @@ func startTCPServer() error {
 	}
 }
 
-func showHelp() {
-	fmt.Println("usage: stats-server [setup|serve]")
-	fmt.Println("  setup: setup systemd service")
-	fmt.Println("  serve: start tcp server")
+var helpText = strings.TrimSpace(`
+usage: stats-server [setup|serve]
 
+This is a simple tcp server that returns system stats, it can be run as a
+systemd service or as a standalone server.
+
+protocol commands:
+    cpu      returns cpu usage
+    memory   returns memory usage
+    network  returns network usage
+    storage  returns storage usage
+    uptime   returns uptime
+
+subcommands:
+    setup    auto-install and setup systemd service
+    serve    start tcp server
+
+config, environment variables:
+    HOST     tcp host to bind to (default: :12345)
+`)
+
+func showHelp() {
+	fmt.Println(helpText)
 	os.Exit(1)
 }
 
@@ -163,17 +181,21 @@ func main() {
 
 	switch os.Args[1] {
 	case "setup":
+		log.Println("starting setup")
 		if err := setupSystemdService(); err != nil {
 			log.Fatal(err)
 		}
 
-		log.Println("setup complete")
+		log.Println("setup completed")
+
 	case "serve":
+		log.Println("starting server")
 		if err := startTCPServer(); err != nil {
 			log.Fatal(err)
 		}
 
 		log.Println("server exited")
+
 	default:
 		showHelp()
 	}

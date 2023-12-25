@@ -41,7 +41,7 @@ The protocol supports the following commands:
 
     ```go
     conn, _ := net.Dial("tcp", "<hostname>:12345")
-    conn.Write([]byte("cpu"))
+    conn.Write([]byte("cpu\n"))
 
     data, _ := io.RealAll(conn)
     log.Printf("data: %s", data)
@@ -70,4 +70,7 @@ $ ./stats-server setup
 
 # trying out the new binary using netcat
 $ time ( echo '<command>' | nc <node> 12345 )
+
+# stop and disable the systemd service on all nodes
+$ parallel --nonall --slf nodes.txt 'systemctl disable --now stats-server.service'
 ```
