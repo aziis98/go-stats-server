@@ -4,13 +4,15 @@ This Go project implements a simple TCP server that responds to custom commands 
 
 ## Commands
 
-The protocol supports the following commands:
+The protocol supports the following commands: 
 
-- `cpu`: Returns the CPU usage as a percentage.
-- `memory`: Returns the memory usage as a percentage.
-- `network`: Returns the network statistics as a JSON object.
-- `storage`: Returns the storage details as a JSON object.
-- `uptime`: Returns the system uptime as a string.
+- `cpu` &mdash; returns the CPU usage percentage
+- `memory` &mdash; returns the memory usage in MB
+- `network` &mdash; returns the network usage in bytes
+- `storage` &mdash; returns the storage usage in GB
+- `uptime` &mdash; returns the system uptime in seconds
+
+[TODO: check if the command docs are correct]
 
 ## Usage
 
