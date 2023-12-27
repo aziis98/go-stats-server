@@ -11,6 +11,7 @@ The protocol supports the following commands:
 - `network` &mdash; returns the network usage in bytes
 - `storage` &mdash; returns the storage usage in GB
 - `uptime` &mdash; returns the system uptime in seconds
+- `temperature` &mdash; returns the CPU temperature of Big and Little cores in Celsius
 
 [TODO: check if the command docs are correct]
 

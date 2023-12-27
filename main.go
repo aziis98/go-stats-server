@@ -25,13 +25,54 @@ ExecStart=/usr/local/bin/stats-server serve
 WantedBy=default.target
 `)
 
-// commands is a map of commands that can be run on the server, originally made by https://github.com/bachoseven
+// cmdStrHelper removes indentation and newlines from a shell command string for
+// better readability.
+//
+// Precisely, it first trims the string, then splits it by newlines, then trims
+// each line, then joins them back with a space.
+func cmdStrHelper(command string) string {
+	lines := strings.Split(strings.TrimSpace(command), "\n")
+	for i, line := range lines {
+		lines[i] = strings.TrimSpace(line)
+	}
+
+	return strings.Join(lines, " ")
+}
+
+// commands is a map of commands that can be run on the server, originally made
+// by @BachoSeven
 var commands = map[string]string{
-	"cpu":     `top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | sed "s/^/100 - /" | bc`,
-	"memory":  `free -m | awk '/Mem/{print $3 " " $2}'`,
-	"network": `cat /sys/class/net/[e]*/statistics/{r,t}x_bytes`,
-	"storage": `df -Ph | grep mmcblk0p5 | awk '{print $2 " " $3}' | sed 's/G//g'`,
-	"uptime":  `cut -f1 -d. /proc/uptime`,
+	"cpu": cmdStrHelper(`
+		top -bn1
+		| grep "Cpu(s)"
+		| sed "s/.*, *\([0-9.]*\)%* id.*/\1/"
+		| sed "s/^/100 - /"
+		| bc
+	`),
+	"memory": cmdStrHelper(`
+		free -m
+		| awk '/Mem/{print $3 " " $2}'
+	`),
+	"network": cmdStrHelper(`
+		cat /sys/class/net/[e]*/statistics/{r,t}x_bytes
+	`),
+	"storage": cmdStrHelper(`
+		df -Ph
+		| grep mmcblk0p5
+		| awk '{print $2 " " $3}'
+		| sed 's/G//g'
+	`),
+	"uptime": cmdStrHelper(`
+		cut -f1 -d. /proc/uptime
+	`),
+	"temperature": cmdStrHelper(`
+		paste
+			<(cat /sys/class/thermal/thermal_zone*/type)
+			<(awk
+				'{printf "%.3f\n", $1/1000}'
+				/sys/class/thermal/thermal_zone*/temp
+			)
+	`),
 }
 
 func init() {
